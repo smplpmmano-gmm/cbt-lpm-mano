@@ -119,12 +119,25 @@
 
     // ===================== API HELPER =====================
     function apiCall(action, data) {
-      var payload = Object.assign({ action: action }, data || {});
-      return fetch(GAS_URL, {
-        method: 'POST',
-        redirect: 'follow',
-        body: JSON.stringify(payload)
-      }).then(function(res) { return res.json(); });
+      return new Promise(function(resolve, reject) {
+        var cbName = 'cb_' + Date.now();
+        var params = 'action=' + encodeURIComponent(action) +
+                     '&data=' + encodeURIComponent(JSON.stringify(data || {})) +
+                     '&callback=' + cbName;
+        var script = document.createElement('script');
+        window[cbName] = function(res) {
+          resolve(res);
+          delete window[cbName];
+          document.body.removeChild(script);
+        };
+        script.onerror = function() {
+          reject(new Error('Gagal memuat script'));
+          delete window[cbName];
+          document.body.removeChild(script);
+        };
+        script.src = GAS_URL + '?' + params;
+        document.body.appendChild(script);
+      });
     }
 
     // ===================== FULLSCREEN =====================
