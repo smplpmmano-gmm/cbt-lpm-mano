@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$','$'],['\\(','\\)']], displayMath: [] },
+      chtml: { scale: 1, matchFontHeight: false },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+      startup: { typeset: false }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); min-height: 100vh; user-select: none; -webkit-user-select: none; }
+    .card-style { background: white; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .fade-in { animation: fadeIn 0.5s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .soal-badge { display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0891b2, #0e7490); color: white; font-weight: 700; font-size: 12px; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px; letter-spacing: 0.5px; }
+    .soal-text { font-size: 15px; font-weight: 600; color: #1e293b; line-height: 1.7; margin-bottom: 14px; }
+    .paragraf-box { background: linear-gradient(135deg, #f0fdfa, #ecfeff); border-left: 4px solid #0891b2; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; font-size: 13px; color: #164e63; line-height: 1.8; }
+    .pilihan-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 14px; text-align: left; background: white; cursor: pointer; transition: all 0.15s; margin-bottom: 8px; font-size: 14px; color: #334155; }
+    .pilihan-btn:hover { border-color: #0891b2; background: #f0fdfa; }
+    .pilihan-btn.selected { border-color: #0891b2; background: #ecfeff; font-weight: 600; color: #0e7490; }
+    .pilihan-huruf { width: 34px; height: 34px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 700; font-size: 13px; background: #f1f5f9; color: #64748b; }
+    .pilihan-btn.selected .pilihan-huruf { background: #0891b2; color: white; }
+    .soal-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .soal-card.answered { border-color: #0891b2; }
+    .nav-grid { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; background: white; border-radius: 16px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
+    .nav-btn { width: 36px; height: 36px; border-radius: 8px; font-size: 11px; font-weight: 700; border: 1.5px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .nav-btn.answered { background: #0891b2; color: white; border-color: #0891b2; }
+    .nav-btn.current { border-color: #f59e0b; color: #f59e0b; }
+  </style>
+</head>
+<body class="text-slate-800 antialiased" oncontextmenu="return false">
+
+  <div id="app" class="max-w-2xl mx-auto min-h-screen p-4 flex flex-col">
+    <header class="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm mb-4 border border-white">
+      <div class="flex items-center gap-3">
+        <img id="el-logo" src="https://cdn-icons-png.flaticon.com/512/2602/2602414.png" class="w-10 h-10 object-contain">
+        <div>
+          <h1 id="el-school" class="font-bold text-slate-900 text-sm uppercase leading-tight">SMP LPM MANO</h1>
+          <p class="text-[10px] text-cyan-600 font-bold uppercase tracking-wider">CBT System 2026</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="btn-fullscreen" onclick="toggleFullscreen()" title="Fullscreen" style="background:#f1f5f9;border:none;border-radius:10px;padding:8px 12px;cursor:pointer;font-size:18px">⛶</button>
+        <div class="text-right">
+          <p class="text-[10px] text-slate-400 font-bold uppercase">Waktu Sekarang</p>
+          <p id="jam-digital" class="text-lg font-mono font-bold text-slate-800 leading-none">00:00:00</p>
+        </div>
+      </div>
+    </header>
+
+    <div id="main-content" class="flex-grow flex flex-col">
+      <div id="dynamic-area" class="flex-grow flex flex-col">
+
+        <div id="page-login" class="card-style p-8 flex-grow flex flex-col justify-center items-center text-center fade-in">
+          <div class="w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-6">Data Diri Peserta</h2>
+            <div id="login-form" class="hidden space-y-4 text-left">
+              <input type="text" id="inp-noujian" placeholder="Nomor Ujian (NISN 10 digit)" inputmode="numeric" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="w-full p-4 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-cyan-500">
+              <input type="text" id="inp-nama" placeholder="Nama Lengkap" oninput="this.value=this.value.toUpperCase()" class="w-full p-4 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-cyan-500">
+              <select id="inp-kelas" class="w-full p-4 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-cyan-500">
+                <option value="">-- Pilih Kelas --</option>
+                <option value="7">Kelas 7</option>
+                <option value="8">Kelas 8</option>
+                <option value="9">Kelas 9</option>
+                <option value="10">Kelas 10-I</option>
+                <option value="10">Kelas 10-II</option>
+                <option value="11">Kelas 11-I</option>
+                <option value="11">Kelas 11-II</option>
+                <option value="12">Kelas 12-I</option>
+                <option value="12">Kelas 12-II</option>
+              </select>
+              <input type="text" id="inp-token" placeholder="Token" class="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-xl font-bold text-center uppercase tracking-widest">
+              <button onclick="startUjian()" class="w-full bg-cyan-600 text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-all">MASUK UJIAN</button>
+            </div>
+            <p id="el-status" class="mt-4 text-sm text-slate-400 italic">Mengecek jadwal...</p>
+          </div>
+        </div>
+
+        <div id="page-exam" class="hidden flex-grow flex flex-col fade-in">
+          <div class="flex justify-between items-center mb-3 px-1">
+            <div class="bg-white px-4 py-2 rounded-xl shadow-sm border border-white">
+              <p class="text-[10px] text-slate-400 font-bold uppercase">Sisa Waktu</p>
+              <span id="timer" class="font-mono font-bold text-xl text-red-600">00:00:00</span>
+            </div>
+            <div class="text-right">
+              <p id="v-info" class="text-[10px] font-bold text-slate-400 uppercase">Status: Aman</p>
+              <span id="q-counter" class="text-xs font-bold bg-slate-800 px-3 py-1 rounded-full text-white">0/0 dijawab</span>
+            </div>
+          </div>
+          <div id="nav-grid" class="nav-grid"></div>
+          <div id="q-area" class="flex-grow overflow-y-auto mb-4"></div>
+          <div class="mb-2">
+            <button onclick="konfirmasiKirim()" class="w-full bg-cyan-600 text-white font-bold py-4 rounded-xl active:bg-cyan-700 shadow-md">KIRIM JAWABAN</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer style="text-align:center;padding:14px 8px 8px;margin-top:4px;border-top:1px solid #e2e8f0">
+      <p style="font-size:11px;color:#94a3b8;line-height:2">
+        <span style="font-size:13px">&#169;</span> 2026 <strong style="color:#64748b">SMP LPM MANO</strong> &nbsp;&bull;&nbsp; CBT System
+        <br>Dikembangkan oleh <strong style="color:#0891b2">Dirgam Ode Adulama</strong>
+        <br><span style="font-size:10px;color:#cbd5e1">Hak cipta dilindungi &nbsp;&bull;&nbsp; Dilarang memperjualbelikan tanpa izin pengembang</span>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    var GAS_URL = 'https://script.google.com/macros/s/AKfycbzPRi9G7vBl9dKqnABNZJwVif6c3ykaDsuDbH2DeO9_10WObCyv7ay84JXeAFvDo09B/exec';
+    var examData, questions = [], answers = [], violations = 0, timerInterval, isSubmitting = false;
+
+    // ===================== API HELPER =====================
+    function apiCall(action, data) {
+      var payload = Object.assign({ action: action }, data || {});
+      return fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      }).then(function(res) { return res.json(); });
+    }
+
+    // ===================== FULLSCREEN =====================
+    function masukFullscreen() {
+      var el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+      else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
+    function keluarFullscreen() {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+      else if (document.msExitFullscreen) document.msExitFullscreen();
+    }
+    function toggleFullscreen() {
+      var isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+      if (isFS) { keluarFullscreen(); document.getElementById('btn-fullscreen').innerText = '⛶'; }
+      else { masukFullscreen(); document.getElementById('btn-fullscreen').innerText = '✕'; }
+    }
+    document.addEventListener('fullscreenchange', function() {
+      var isFS = document.fullscreenElement || document.webkitFullscreenElement;
+      document.getElementById('btn-fullscreen').innerText = isFS ? '✕' : '⛶';
+    });
+
+    // ===================== JAM DIGITAL =====================
+    setInterval(function() {
+      var d = new Date();
+      document.getElementById('jam-digital').innerHTML = d.toLocaleTimeString('id-ID', {hour12:false});
+    }, 1000);
+
+    // ===================== PELANGGARAN =====================
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden' && questions.length > 0 && !isSubmitting) {
+        violations++;
+        var vi = document.getElementById('v-info');
+        vi.innerHTML = 'PELANGGARAN: ' + violations + '/3';
+        vi.style.color = 'red';
+        if (violations >= 3) { alert('PELANGGARAN MAKSIMAL! Ujian dihentikan.'); prosesKirim(); }
+        else alert('PERINGATAN ' + violations + '/3: Anda dilarang keluar dari halaman ujian!');
+      }
+    });
+
+    // ===================== LOAD AWAL =====================
+    window.onload = function() {
+      apiCall('dapatkanDataBaru', { kelas: null })
+        .then(function(res) {
+          if (res.error) {
+            document.getElementById('el-status').innerHTML = '<span style="color:red;font-weight:bold">' + res.error + '</span>';
+            return;
+          }
+          examData = res;
+          document.getElementById('el-school').innerText = res.sekolah.nama || 'SMP LPM MANO';
+          if (res.sekolah.logo && res.sekolah.logo.trim() !== '') {
+            var img = document.getElementById('el-logo');
+            img.src = res.sekolah.logo.trim();
+            img.onerror = function() { img.src = 'https://cdn-icons-png.flaticon.com/512/2602/2602414.png'; };
+          }
+          if (res.ujian && res.ujian.mapel) {
+            document.getElementById('el-status').innerText = 'Mapel: ' + res.ujian.mapel;
+            document.getElementById('login-form').classList.remove('hidden');
+          } else {
+            document.getElementById('el-status').innerHTML = '<div style="background:#fff0f0;border:1px solid #fca5a5;padding:16px;border-radius:12px;margin-top:16px;text-align:center"><p style="color:#dc2626;font-weight:bold;font-size:13px">TIDAK ADA JADWAL TERSEDIA</p><p style="color:#64748b;font-size:10px;margin-top:4px">Hubungi proktor untuk info lebih lanjut.</p></div>';
+            document.getElementById('login-form').classList.add('hidden');
+          }
+        })
+        .catch(function(err) {
+          document.getElementById('el-status').innerHTML = '<span style="color:red;font-size:11px">ERROR: ' + err.message + '</span>';
+        });
+    };
+
+    // ===================== START UJIAN =====================
+    function startUjian() {
+      var noujian = document.getElementById('inp-noujian').value;
+      var nama    = document.getElementById('inp-nama').value;
+      var kelas   = document.getElementById('inp-kelas').value;
+      var token   = document.getElementById('inp-token').value;
+      if (!noujian) return alert('Harap isi Nomor Ujian (NISN)!');
+      if (!/^[0-9]{10}$/.test(noujian)) return alert('NISN tidak valid! Harus tepat 10 digit angka.');
+      if (!nama)  return alert('Harap isi Nama Lengkap!');
+      if (!kelas) return alert('Harap pilih Kelas!');
+      document.getElementById('el-status').innerText = 'Memeriksa jadwal...';
+
+      apiCall('dapatkanDataBaru', { kelas: kelas })
+        .then(function(res) {
+          if (res.error) { document.getElementById('el-status').innerHTML = '<span style="color:red;font-weight:bold">' + res.error + '</span>'; return; }
+          if (!res.ujian || !res.ujian.mapel) {
+            document.getElementById('el-status').innerHTML = '<div style="background:#fff0f0;border:1px solid #fca5a5;padding:16px;border-radius:12px;margin-top:16px;text-align:center"><p style="color:#dc2626;font-weight:bold;font-size:13px">TIDAK ADA JADWAL UNTUK KELAS INI</p></div>';
+            return;
+          }
+          if (res.ujian.token && token.toUpperCase() !== res.ujian.token.toUpperCase()) {
+            document.getElementById('el-status').innerText = 'Mapel: ' + res.ujian.mapel;
+            return alert('Token Salah!');
+          }
+          examData.ujian = res.ujian;
+          masukFullscreen();
+          document.getElementById('el-status').innerText = 'Memuat Soal...';
+
+          apiCall('getSoalData', { docId: examData.ujian.docId })
+            .then(function(soal) {
+              questions = soal;
+              answers   = new Array(soal.length).fill('');
+
+              apiCall('getJawabanLama', { noUjian: noujian, sheetTujuan: examData.ujian.sheetTujuan })
+                .then(function(dataLama) {
+                  if (dataLama && dataLama.jawaban) {
+                    try {
+                      var jawabanLama  = JSON.parse(dataLama.jawaban);
+                      var hurufKeAngka = {'A':0,'B':1,'C':2,'D':3,'E':4};
+                      for (var i = 0; i < jawabanLama.length && i < answers.length; i++) {
+                        var j = jawabanLama[i];
+                        if (j === '-' || j === '' || j === null) answers[i] = '';
+                        else if (typeof j === 'string' && hurufKeAngka[j] !== undefined) answers[i] = hurufKeAngka[j];
+                        else answers[i] = j;
+                      }
+                    } catch(e) { answers = new Array(soal.length).fill(''); }
+                  }
+                  tampilkanUjian();
+                })
+                .catch(function() { tampilkanUjian(); });
+            })
+            .catch(function(err) {
+              document.getElementById('el-status').innerHTML = '<span style="color:red;font-size:11px">ERROR SOAL: ' + err.message + '</span>';
+            });
+        })
+        .catch(function(err) {
+          document.getElementById('el-status').innerHTML = '<span style="color:red;font-size:11px">ERROR: ' + err.message + '</span>';
+        });
+    }
+
+    function tampilkanUjian() {
+      document.getElementById('page-login').classList.add('hidden');
+      document.getElementById('page-exam').classList.remove('hidden');
+      renderSemuaSoal();
+      var waktuSelesai = examData.ujian.waktuSelesai;
+      timerInterval = setInterval(function() {
+        var sisa = Math.floor((waktuSelesai - new Date().getTime()) / 1000);
+        if (sisa <= 0) { clearInterval(timerInterval); document.getElementById('timer').innerText = '00:00:00'; prosesKirim(); return; }
+        var h = Math.floor(sisa/3600), m = Math.floor((sisa%3600)/60), s = sisa%60;
+        document.getElementById('timer').innerText = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      }, 1000);
+    }
+
+    // ===================== RENDER SOAL =====================
+    function renderSemuaSoal() {
+      var area = document.getElementById('q-area');
+      area.innerHTML = '';
+      updateCounter();
+      renderNavGrid();
+      questions.forEach(function(q, idx) {
+        var card = document.createElement('div');
+        card.className = 'soal-card' + (answers[idx] !== '' ? ' answered' : '');
+        card.id = 'soal-card-' + idx;
+        var html = '<div class="soal-badge">Soal ' + (idx+1) + ' dari ' + questions.length + '</div>';
+        if (q.p) html += '<div class="paragraf-box">' + q.p.replace(/\n/g,'<br>') + '</div>';
+        var questionText = q.q;
+        if (questionText.includes('||IMG||')) {
+          questionText = questionText.replace(/\|\|IMG\|\|(.*?)\|\|([\s\S]*?)\|\|ENDIMG\|\|/g, function(match, mimeType, base64) {
+            return '<img src="data:' + mimeType + ';base64,' + base64 + '" style="max-width:100%;border-radius:12px;margin:12px auto;display:block">';
+          });
+        }
+        html += '<div class="soal-text">' + questionText + '</div>';
+        card.innerHTML = html;
+        if (q.type === 'ESAI') {
+          var tx = document.createElement('textarea');
+          tx.style = 'width:100%;padding:14px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;height:100px;outline:none;font-size:14px;font-family:Inter,sans-serif;resize:vertical';
+          tx.placeholder = 'Tulis jawaban Anda di sini...';
+          tx.value = answers[idx];
+          tx.oninput = (function(i) { return function(e) { answers[i] = e.target.value; updateCounter(); updateNavGrid(); var c = document.getElementById('soal-card-'+i); if(c) c.className='soal-card'+(answers[i]!==''?' answered':''); autoSave(); }; })(idx);
+          card.appendChild(tx);
+        } else {
+          q.opts.forEach(function(o, i) {
+            var btn = document.createElement('button');
+            btn.className = 'pilihan-btn' + (answers[idx] === i ? ' selected' : '');
+            btn.innerHTML = '<span class="pilihan-huruf">' + String.fromCharCode(65+i) + '</span><span>' + o + '</span>';
+            btn.onclick = (function(qIdx, optIdx) { return function() {
+              answers[qIdx] = optIdx;
+              var cardEl = document.getElementById('soal-card-'+qIdx);
+              if (cardEl) {
+                cardEl.className = 'soal-card answered';
+                cardEl.querySelectorAll('.pilihan-btn').forEach(function(b, bi) {
+                  b.className = 'pilihan-btn' + (bi===optIdx?' selected':'');
+                  b.querySelector('.pilihan-huruf').style.background = bi===optIdx?'#0891b2':'#f1f5f9';
+                  b.querySelector('.pilihan-huruf').style.color = bi===optIdx?'white':'#64748b';
+                });
+              }
+              updateCounter(); updateNavGrid(); autoSave();
+            }; })(idx, i);
+            card.appendChild(btn);
+          });
+        }
+        area.appendChild(card);
+      });
+      if (window.MathJax) MathJax.typesetPromise([document.getElementById('q-area')]);
+    }
+
+    function updateCounter() {
+      var dijawab = answers.filter(function(a) { return a !== ''; }).length;
+      document.getElementById('q-counter').innerText = dijawab + '/' + questions.length + ' dijawab';
+    }
+    function renderNavGrid() {
+      var grid = document.getElementById('nav-grid');
+      grid.innerHTML = '';
+      questions.forEach(function(q, i) {
+        var btn = document.createElement('button');
+        btn.className = 'nav-btn' + (answers[i] !== '' ? ' answered' : '');
+        btn.id = 'nav-btn-' + i;
+        btn.innerText = i+1;
+        btn.onclick = function() { var el = document.getElementById('soal-card-'+i); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); };
+        grid.appendChild(btn);
+      });
+    }
+    function updateNavGrid() {
+      questions.forEach(function(q, i) { var btn = document.getElementById('nav-btn-'+i); if(btn) btn.className='nav-btn'+(answers[i]!==''?' answered':''); });
+    }
+
+    // ===================== AUTOSAVE =====================
+    function autoSave() {
+      var questionTypes = questions.map(function(q) { return {type:q.type, key:q.key}; });
+      apiCall('simpanJawabanSementara', {
+        noUjian: document.getElementById('inp-noujian').value,
+        nama: document.getElementById('inp-nama').value,
+        kelas: document.getElementById('inp-kelas').value,
+        answers: answers,
+        questions: questionTypes,
+        sheetTujuan: examData.ujian.sheetTujuan
+      }).catch(function() {});
+    }
+
+    // ===================== KIRIM JAWABAN =====================
+    function konfirmasiKirim() {
+      var dijawab = answers.filter(function(a) { return a !== ''; }).length;
+      var belum   = questions.length - dijawab;
+      var pesan   = 'Anda sudah menjawab ' + dijawab + ' dari ' + questions.length + ' soal.';
+      if (belum > 0) pesan += '\n' + belum + ' soal belum dijawab.';
+      pesan += '\n\nApakah Anda yakin ingin mengirim jawaban?';
+      if (confirm(pesan)) prosesKirim();
+    }
+
+    function prosesKirim() {
+      if (isSubmitting) return;
+      isSubmitting = true;
+      clearInterval(timerInterval);
+      keluarFullscreen();
+      document.getElementById('dynamic-area').innerHTML = '<div class="card-style p-12 text-center fade-in"><p class="animate-bounce font-bold text-slate-800">Menyimpan jawaban...</p></div>';
+      var b = 0, p = 0;
+      questions.forEach(function(q, i) { if(q.type==='PG'){p++;if(answers[i]===q.key)b++;} });
+      apiCall('simpanHasil', {
+        noUjian: document.getElementById('inp-noujian').value,
+        nama: document.getElementById('inp-nama').value,
+        kelas: document.getElementById('inp-kelas').value,
+        skorPG: p > 0 ? ((b/p)*100).toFixed(2) : '0',
+        jawaban: answers.slice(),
+        pelanggaran: violations,
+        sheetTujuan: examData.ujian.sheetTujuan
+      })
+      .then(function() {
+        document.getElementById('dynamic-area').innerHTML = '<div class="card-style p-10 text-center fade-in"><h1 style="font-size:24px;font-weight:900;color:#16a34a;margin-bottom:8px">UJIAN SELESAI</h1><button onclick="location.reload()" style="background:#0f172a;color:white;padding:12px 32px;border-radius:12px;font-weight:bold">KEMBALI</button></div>';
+      })
+      .catch(function(err) {
+        document.getElementById('dynamic-area').innerHTML = '<div class="card-style p-10 text-center fade-in"><h1 style="font-size:20px;font-weight:900;color:#dc2626;margin-bottom:8px">GAGAL SIMPAN</h1><p style="font-size:11px;color:#64748b">' + err.message + '</p><button onclick="location.reload()" style="background:#0f172a;color:white;padding:12px 32px;border-radius:12px;font-weight:bold;margin-top:16px">COBA LAGI</button></div>';
+      });
+    }
+  </script>
+</body>
+</html>
