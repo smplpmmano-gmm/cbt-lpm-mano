@@ -122,6 +122,7 @@
       var payload = Object.assign({ action: action }, data || {});
       return fetch(GAS_URL, {
         method: 'POST',
+        redirect: 'follow',
         body: JSON.stringify(payload)
       }).then(function(res) { return res.json(); });
     }
