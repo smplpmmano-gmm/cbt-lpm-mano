@@ -349,6 +349,22 @@
   .q-text img, .opt-text img { max-width: 100%; border-radius: 12px; margin: 10px auto; display: block; }
   .credit-small { font-size: 10px; opacity: .8; }
   .tabs-row[hidden], .seg-tab[hidden], .map-label[hidden], .map-cells[hidden] { display: none !important; }
+
+    /* ---------- Peringatan pelanggaran ---------- */
+  .alert-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(6, 16, 30, .75); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .alert-box { width: min(100%, 380px); background: var(--surface); border-radius: 26px; border-top: 7px solid #f5a524; padding: 26px 22px 22px; text-align: center; box-shadow: 0 24px 60px rgba(0, 0, 0, .45); animation: pop .25s ease-out; }
+  .alert-box.fatal { border-top-color: var(--danger); }
+  .alert-ico { width: 76px; height: 76px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center; background: var(--warn-soft); color: var(--warn); }
+  .alert-box.fatal .alert-ico { background: rgba(192, 54, 44, .15); color: var(--danger); }
+  .alert-ico svg { width: 40px; height: 40px; }
+  .alert-box h3 { font-size: 22px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; margin-bottom: 10px; }
+  .alert-count { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
+  .alert-count i { width: 34px; height: 8px; border-radius: 99px; background: var(--line); }
+  .alert-count i.on { background: #f5a524; }
+  .alert-box.fatal .alert-count i.on { background: var(--danger); }
+  .alert-box p { font-size: 15px; line-height: 1.6; color: var(--muted); margin-bottom: 18px; }
+  .alert-box p b { color: var(--ink); }
+  @keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
 </style>
 </head>
 <body oncontextmenu="return false">
@@ -476,6 +492,18 @@
   <div class="sheet gutter" role="dialog" aria-modal="true" aria-labelledby="sheet-title" id="sheet" tabindex="-1">
     <h3 id="sheet-title">Kirim jawaban?</h3>
     <div id="sheet-body"></div>
+  </div>
+</div>
+
+  <div class="alert-overlay" id="alert-vio" hidden>
+  <div class="alert-box" id="alert-box" role="alertdialog" aria-modal="true" aria-labelledby="alert-title" aria-describedby="alert-text">
+    <div class="alert-ico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+    </div>
+    <h3 id="alert-title"></h3>
+    <div class="alert-count" id="alert-count" aria-hidden="true"></div>
+    <p id="alert-text"></p>
+    <button type="button" class="btn" id="alert-ok">Saya Mengerti</button>
   </div>
 </div>
 
@@ -635,17 +663,40 @@
   });
 
   // ===================== PELANGGARAN =====================
-  document.addEventListener('visibilitychange', function () {
+    document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden' && questions.length > 0 && !submitting && !finished) {
       violations++;
       var v = $('vchip');
-      v.textContent = 'Pelanggaran ' + violations + '/' + MAKS_PELANGGARAN;
+      v.textContent = '\u26A0 ' + violations + '/' + MAKS_PELANGGARAN;
       v.style.display = 'inline-flex';
       dirtyPG = true; pgVer++; kick();
-      if (violations >= MAKS_PELANGGARAN) { alert('PELANGGARAN MAKSIMAL! Ujian dihentikan.'); kirim(); }
-      else alert('PERINGATAN ' + violations + '/' + MAKS_PELANGGARAN + ': Anda dilarang keluar dari halaman ujian!');
+      var fatal = violations >= MAKS_PELANGGARAN;
+      tampilPeringatan(fatal);
+      if (fatal) kirim();
     }
   });
+
+  function tampilPeringatan(fatal) {
+    $('alert-box').className = 'alert-box' + (fatal ? ' fatal' : '');
+    $('alert-title').textContent = fatal ? 'UJIAN DIHENTIKAN' : 'PELANGGARAN ' + violations + ' DARI ' + MAKS_PELANGGARAN;
+    var dots = $('alert-count');
+    dots.textContent = '';
+    for (var i = 1; i <= MAKS_PELANGGARAN; i++) dots.appendChild(el('i', i <= violations ? 'on' : ''));
+    var t = $('alert-text');
+    t.textContent = '';
+    if (fatal) {
+      t.appendChild(document.createTextNode('Anda sudah keluar dari halaman ujian '));
+      t.appendChild(el('b', '', MAKS_PELANGGARAN + ' kali'));
+      t.appendChild(document.createTextNode('. Jawaban Anda dikirim otomatis dan ujian diakhiri.'));
+    } else {
+      t.appendChild(document.createTextNode('Anda meninggalkan halaman ujian. Dilarang membuka aplikasi atau tab lain. '));
+      t.appendChild(el('b', '', 'Sisa kesempatan: ' + (MAKS_PELANGGARAN - violations) + ' kali'));
+      t.appendChild(document.createTextNode(', setelah itu ujian dihentikan dan jawaban dikirim otomatis.'));
+    }
+    $('alert-vio').hidden = false;
+    $('alert-ok').focus();
+  }
+  $('alert-ok').addEventListener('click', function () { $('alert-vio').hidden = true; });
 
   // ===================== MUAT AWAL =====================
   function muatAwal() {
