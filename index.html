@@ -139,7 +139,7 @@
   .hero-inner { display: flex; align-items: center; gap: 14px; }
   .logo {
     width: 54px; height: 54px; flex: none; border-radius: 16px;
-    border: 2px solid transparent; background: linear-gradient(var(--g1), var(--g1)) padding-box, conic-gradient(from var(--a), #ff3d6e, #ffb020, #2bd67b, #1fb6ff, #8b5cf6, #ff3d6e) border-box; animation: spinA 6s linear infinite;
+    border: 2px solid rgba(255, 255, 255, .6); background: var(--g1); overflow: hidden;
     display: grid; place-items: center; font-weight: 800; font-size: 15px; letter-spacing: .02em;
   }
   .hero h1 { font-size: 19px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; }
@@ -194,7 +194,7 @@
   .progress { height: 5px; background: rgba(255, 255, 255, .18); }
   .progress i { display: block; height: 100%; width: 0; background: var(--rgb); background-size: 200% 100%; animation: flow 4s linear infinite alternate; transition: width .35s ease; }
 
-  .content { padding-block: 18px 130px; }
+  .content { padding-block: 18px 190px; }
   .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
   .sec-head h2 { font-size: 22px; font-weight: 800; letter-spacing: -.015em; }
   .sec-head span { font-size: 13px; color: var(--muted); text-align: right; }
@@ -216,7 +216,7 @@
 
   #q-area { animation: rise .22s ease-out; }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .q { background: var(--surface); border: 1.5px solid var(--line); border-radius: 20px; padding: 16px; margin-bottom: 12px; scroll-margin-top: 190px; transition: border-color .2s; }
+  .q { background: var(--surface); border: 1.5px solid var(--line); border-radius: 20px; padding: 16px; margin-bottom: 12px; scroll-margin-top: 130px; transition: border-color .2s; }
   .q.answered { border-color: transparent; background: linear-gradient(var(--surface), var(--surface)) padding-box, var(--rgb) border-box; }
   .q-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .q-num { width: 30px; height: 30px; border-radius: 50%; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; font-weight: 800; font-size: 13px; transition: background .2s, color .2s; }
@@ -245,17 +245,18 @@
     box-shadow: 0 -8px 24px rgba(15, 31, 51, .1);
   }
   .bb-inner { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
-  .tabs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 10px; }
+  .tabs-wrap { padding-top: 10px; }
+  .tabs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .seg-tab {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    min-height: 46px; padding: 0 8px 0 14px; border-radius: 14px; border: 1.5px solid rgba(255, 255, 255, .25);
-    background: rgba(255, 255, 255, .14); color: #fff; font-weight: 700;
+    min-height: 44px; padding: 0 8px 0 14px; border-radius: 14px; border: 1.5px solid var(--line);
+    background: var(--surface-2); color: var(--ink); font-weight: 700;
     transition: background .15s, color .15s, border-color .15s;
   }
   .seg-tab span { font-size: 13px; white-space: nowrap; }
-  .seg-tab b { min-width: 44px; text-align: center; font-size: 14px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .24); font-variant-numeric: tabular-nums; }
-  .seg-tab[aria-selected="true"] { background: #fff; border-color: #fff; color: #0a2a6e; }
-  .seg-tab[aria-selected="true"] b { background: #0a55e8; color: #fff; }
+  .seg-tab b { min-width: 44px; text-align: center; font-size: 14px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font-variant-numeric: tabular-nums; }
+  .seg-tab[aria-selected="true"] { background: linear-gradient(120deg, var(--g2), var(--g4)); border-color: transparent; color: #fff; }
+  .seg-tab[aria-selected="true"] b { background: rgba(255, 255, 255, .26); color: #fff; }
   .seg-tab.complete b { background: #16b364; color: #fff; }
   .bb-info { display: grid; gap: 2px; min-width: 0; }
   .bb-info #prog-text { font-weight: 700; font-size: 13px; }
@@ -322,10 +323,11 @@
     #view-login, #view-done { max-width: 520px; margin: 40px auto 0; border-radius: 28px; overflow: hidden; box-shadow: var(--shadow); background: var(--bg); }
     .topbar .gutter, .content, .bb-inner { max-width: 1120px; margin-inline: auto; }
     .top-row { padding-block: 12px 8px; }
-    .tabs-row { max-width: 560px; }
+    .tabs-wrap { max-width: 1120px; margin-inline: auto; }
+    .tabs-row { grid-template-columns: repeat(2, 240px); }
     .content { max-width: 860px; }
     .bottombar { left: 0; transform: none; width: 100%; }
-    .q { padding: 22px; scroll-margin-top: 190px; }
+    .q { padding: 22px; scroll-margin-top: 130px; }
     .q-text { font-size: 18px; }
     .send { min-width: 180px; }
   }
@@ -462,10 +464,6 @@
             </div>
           </div>
         </div>
-        <div class="tabs-row" role="tablist" aria-label="Bagian soal">
-          <button type="button" class="seg-tab" id="tab-pg" role="tab" aria-selected="true"><span>Pilihan Ganda</span><b id="cnt-pg">0/0</b></button>
-          <button type="button" class="seg-tab" id="tab-esai" role="tab" aria-selected="false"><span>Esai</span><b id="cnt-esai">0/0</b></button>
-        </div>
         <div class="map-strip" aria-label="Peta soal">
           <span class="map-label" id="lbl-pg">PG</span><div class="map-cells" id="map-pg"></div>
           <span class="map-label" id="lbl-esai">Esai</span><div class="map-cells" id="map-esai"></div>
@@ -486,6 +484,12 @@
     </div>
 
     <nav class="bottombar" aria-label="Kirim jawaban">
+      <div class="gutter tabs-wrap">
+        <div class="tabs-row" role="tablist" aria-label="Bagian soal">
+          <button type="button" class="seg-tab" id="tab-pg" role="tab" aria-selected="true"><span>Pilihan Ganda</span><b id="cnt-pg">0/0</b></button>
+          <button type="button" class="seg-tab" id="tab-esai" role="tab" aria-selected="false"><span>Esai</span><b id="cnt-esai">0/0</b></button>
+        </div>
+      </div>
       <div class="bb-inner gutter">
         <div class="bb-info">
           <span id="prog-text">0 dari 0 soal terjawab</span>
@@ -930,7 +934,7 @@
     $('who-sub').textContent = examData.ujian.mapel + ' • ' + identity.kelasLabel;
     var adaPG = pgList.length > 0, adaEsai = esaiList.length > 0;
     $('tab-pg').hidden = !adaPG; $('tab-esai').hidden = !adaEsai;
-    $('tab-pg').parentNode.style.gridTemplateColumns = (adaPG && adaEsai) ? '' : '1fr';
+    $('tab-pg').parentNode.hidden = !(adaPG && adaEsai);
     $('lbl-pg').hidden = $('map-pg').hidden = !adaPG;
     $('lbl-esai').hidden = $('map-esai').hidden = !adaEsai;
     buildMap();
