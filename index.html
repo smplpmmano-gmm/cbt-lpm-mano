@@ -410,6 +410,10 @@
             <option value="12">Kelas 12-II</option>
           </select>
         </div>
+        <div class="field" id="fld-mapel" hidden>
+          <label for="inp-mapel">Mata Pelajaran</label>
+          <select id="inp-mapel"></select>
+        </div>
         <div class="info" id="info" hidden>
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>
           <div id="info-text"></div>
@@ -720,31 +724,52 @@
   }
 
   // ===================== PILIH KELAS: TAMPILKAN JADWAL & SEKOLAH =====================
-  var infoSeq = 0;
+    var infoSeq = 0;
   function tanggalWIT(ms) {
     return new Date(ms).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ });
   }
   function jamWIT(ms) {
     return new Date(ms).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ }).replace(':', '.');
   }
-  function onKelas() {
+  function isiPilihanMapel(daftar, terpilih) {
+    var sel = $('inp-mapel');
+    sel.textContent = '';
+    var ph = el('option', '', '-- Pilih Mata Pelajaran --'); ph.value = ''; sel.appendChild(ph);
+    daftar.forEach(function (m) { var o = el('option', '', m); o.value = m; sel.appendChild(o); });
+    sel.value = (terpilih && daftar.indexOf(terpilih) !== -1) ? terpilih : '';
+  }
+  function muatInfo(pertahankanMapel) {
     var sel = $('inp-kelas');
     var v = sel.value;
     var box = $('info'), txt = $('info-text');
-    if (!v) { infoSeq++; box.hidden = true; applySchool(null, ''); return; }
+    if (!v) { infoSeq++; box.hidden = true; $('fld-mapel').hidden = true; applySchool(null, ''); return; }
     var label = sel.options[sel.selectedIndex].text;
     var seq = ++infoSeq;
+    var mapelDipilih = pertahankanMapel ? $('inp-mapel').value : '';
     applySchool(null, v);
     box.hidden = false;
     txt.textContent = 'Memeriksa jadwal...';
-    apiCall('dapatkanDataBaru', { kelas: v }, 15000).then(function (res) {
+    var data = { kelas: v };
+    if (mapelDipilih) data.mapel = mapelDipilih;
+    apiCall('dapatkanDataBaru', data, 15000).then(function (res) {
       if (seq !== infoSeq) return;
       txt.textContent = '';
       if (!res || res.error) { txt.textContent = 'Jadwal belum bisa dimuat. Anda tetap bisa menekan Masuk Ujian.'; return; }
+      var pilihan = res.pilihanMapel || [];
+      if (res.sekolah) applySchool(res.sekolah, v);
+      if (pilihan.length > 1) {
+        if (!pertahankanMapel) isiPilihanMapel(pilihan, '');
+        $('fld-mapel').hidden = false;
+      } else {
+        $('fld-mapel').hidden = true;
+        $('inp-mapel').textContent = '';
+      }
       if (res.ujian && res.ujian.mapel) {
-        applySchool(res.sekolah, v);
         txt.appendChild(el('b', '', res.ujian.mapel + ', ' + label));
-        txt.appendChild(document.createTextNode(tanggalWIT(res.ujian.mulai) + ' • ' + jamWIT(res.ujian.mulai) + ' sampai ' + jamWIT(res.ujian.waktuSelesai) + ' WIT'));
+        txt.appendChild(document.createTextNode(tanggalWIT(res.ujian.mulai) + ' \u2022 ' + jamWIT(res.ujian.mulai) + ' sampai ' + jamWIT(res.ujian.waktuSelesai) + ' WIT'));
+      } else if (pilihan.length > 1) {
+        txt.appendChild(el('b', '', label));
+        txt.appendChild(document.createTextNode('Ada ' + pilihan.length + ' mata pelajaran yang berlangsung. Pilih mata pelajaran yang Anda ambil.'));
       } else {
         txt.appendChild(el('b', '', label));
         txt.appendChild(document.createTextNode('Belum ada ujian yang berlangsung untuk kelas ini.'));
@@ -754,6 +779,8 @@
       txt.textContent = 'Jadwal belum bisa dimuat. Anda tetap bisa menekan Masuk Ujian.';
     });
   }
+  function onKelas() { muatInfo(false); }
+  function onMapel() { if ($('inp-mapel').value) muatInfo(true); }
 
   // ===================== MASUK UJIAN =====================
   function showError(msg) { var e = $('login-error'); e.textContent = msg; e.hidden = false; }
@@ -773,12 +800,14 @@
     if (!/^[0-9]{10}$/.test(nisn)) return showError('NISN tidak valid. Harus tepat 10 digit angka.');
     if (!nama) return showError('Harap isi Nama Lengkap.');
     if (!kelas) return showError('Harap pilih Kelas.');
+        var mapel = $('fld-mapel').hidden ? '' : $('inp-mapel').value;
+    if (!$('fld-mapel').hidden && !mapel) return showError('Harap pilih Mata Pelajaran.');
     $('login-error').hidden = true;
     setBusy(true, 'Memeriksa jadwal...');
 
-    callWithRetry('dapatkanDataBaru', { kelas: kelas }, { tries: 2, timeout: 20000 })
+    callWithRetry('dapatkanDataBaru', mapel ? { kelas: kelas, mapel: mapel } : { kelas: kelas }, { tries: 2, timeout: 20000 })
       .then(function (res) {
-        if (!res.ujian || !res.ujian.mapel) throw new Error('Tidak ada jadwal ujian untuk kelas ini.');
+        if (!res.ujian || !res.ujian.mapel) throw new Error(res.pilihanMapel && res.pilihanMapel.length > 1 ? 'Harap pilih Mata Pelajaran.' : 'Tidak ada jadwal ujian untuk kelas ini.');
         if (res.ujian.token && token !== String(res.ujian.token).trim().toUpperCase()) throw new Error('Token salah.');
         examData = res;
         offset = (res.serverNow || Date.now()) - Date.now();
@@ -1299,6 +1328,7 @@
   $('inp-nama').addEventListener('input', function () { this.value = this.value.toUpperCase(); });
   $('inp-noujian').addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, ''); });
   $('inp-kelas').addEventListener('change', onKelas);
+  $('inp-mapel').addEventListener('change', onMapel);
   $('btn-start').addEventListener('click', startUjian);
   $('tab-pg').addEventListener('click', function () { pindahBagian('pg'); });
   $('tab-esai').addEventListener('click', function () { pindahBagian('esai'); });
