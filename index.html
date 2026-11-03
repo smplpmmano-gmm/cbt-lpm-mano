@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <base target="_top">
-<title>CBT SMP LPM Mano</title>
+<title>CBT LPM Mano</title>
 <link rel="icon" type="image/x-icon" href="https://smplpmmano-gmm.github.io/proyek-pertama/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -350,6 +350,33 @@
   .paragraf { background: var(--brand-soft); border-left: 4px solid var(--brand); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 14px; line-height: 1.7; }
   .q-text img, .opt-text img { max-width: 100%; border-radius: 12px; margin: 10px auto; display: block; }
   .credit-small { font-size: 10px; opacity: .8; }
+
+  /* ---------- Bentuk soal TKA: PG kompleks, kategori, bacaan bersama ---------- */
+  .hint { font-size: 12.5px; font-weight: 600; color: var(--muted); margin: -4px 0 10px; }
+  .opt.multi .letter { border-radius: 8px; }
+  .opt-text { line-height: 1.5; }
+  .kat { display: grid; gap: 10px; }
+  .kat-row { display: grid; gap: 10px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 15px; background: var(--surface); }
+  .kat-st { font-size: 15px; line-height: 1.55; }
+  .kat-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kbtn { min-height: 44px; padding: 6px 10px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--muted); font-size: 14.5px; font-weight: 700; transition: border-color .15s, background .15s, color .15s; }
+  .kbtn:active { transform: scale(.98); }
+  .kbtn[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); box-shadow: 0 6px 16px -8px var(--brand); }
+  .q.partial:not(.answered) { border-color: var(--warn); }
+  .grup { margin-bottom: 4px; }
+  .grup-bacaan { background: var(--brand-soft); border-left: 4px solid var(--brand); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; scroll-margin-top: 130px; }
+  .grup-judul { font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--brand); margin-bottom: 8px; }
+  .grup-isi { font-size: 15px; line-height: 1.75; }
+  .lihat-bacaan { margin-left: auto; border: 0; border-radius: 999px; padding: 5px 11px; background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 700; }
+  @media (min-width: 600px) {
+    .kat-row { grid-template-columns: 1fr 270px; align-items: center; }
+  }
+  @media (min-width: 900px) {
+    .content.wide { max-width: 1120px; }
+    .grup { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 18px; align-items: start; }
+    .grup-bacaan { position: sticky; top: 128px; max-height: calc(100vh - 300px); overflow: auto; margin-bottom: 0; }
+    .lihat-bacaan { display: none; }
+  }
   .tabs-row[hidden], .seg-tab[hidden], .map-label[hidden], .map-cells[hidden] { display: none !important; }
   /* ---------- Peringatan pelanggaran ---------- */
   .alert-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(6, 16, 30, .75); display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -388,7 +415,7 @@
       <div class="hero-inner">
         <div class="logo" id="logo">CBT</div>
         <div class="hero-text">
-          <h1 id="school-name">CBT SMP LPM Mano</h1>
+          <h1 id="school-name">CBT LPM Mano</h1>
           <p>CBT System 2026</p>
         </div>
         <div class="clock" id="jam-digital">00:00:00</div>
@@ -451,7 +478,7 @@
         <div class="top-row">
           <div class="who">
             <div class="logo" id="logo2">CBT</div>
-            <div class="who-text"><b id="who-school">CBT SMP LPM Mano</b><span id="who-sub"></span></div>
+            <div class="who-text"><b id="who-school">CBT LPM Mano</b><span id="who-sub"></span></div>
           </div>
           <div class="top-actions">
             <span class="vchip" id="vchip"></span>
@@ -504,7 +531,7 @@
   <section id="view-done" hidden></section>
 
   <footer class="credit gutter">
-    &copy; 2026 <b id="foot-school">CBT SMP LPM MANO</b> &bull; CBT System<br>
+    &copy; 2026 <b id="foot-school">CBT LPM MANO</b> &bull; CBT System<br>
     Dikembangkan oleh <b>Dirgam Ode Adulama</b><br>
     <span class="credit-small">Hak cipta dilindungi &bull; Dilarang memperjualbelikan tanpa izin pengembang</span>
   </footer>
@@ -903,11 +930,22 @@
       });
   }
 
+  function jawabanKosong(q) {
+    if (q.type === 'KAT') return (q.opts || []).map(function () { return ''; });
+    if (q.type === 'PGK') return [];
+    return '';
+  }
+  function pgTerjawab(n) {
+    var q = questions[pgList[n]], a = ansPG[n];
+    if (q.type === 'KAT') return a.length > 0 && a.every(function (v) { return v !== ''; });
+    if (q.type === 'PGK') return a.length > 0;
+    return a !== '';
+  }
   function siapkanSoal(soal) {
     questions = soal;
     pgList = []; esaiList = [];
     soal.forEach(function (q, i) { if (q.type === 'ESAI') esaiList.push(i); else pgList.push(i); });
-    ansPG = pgList.map(function () { return ''; });
+    ansPG = pgList.map(function (qi) { return jawabanKosong(soal[qi]); });
     ansEsai = esaiList.map(function () { return ''; });
     esaiVer = esaiList.map(function () { return 0; });
     dirtyPG = false; dirtyEsai = {}; pgVer = 0;
@@ -916,8 +954,15 @@
     if (!lama) return;
     if (Array.isArray(lama.pg)) {
       for (var i = 0; i < ansPG.length && i < lama.pg.length; i++) {
-        var idx = 'ABCDE'.indexOf(lama.pg[i]);
-        ansPG[i] = idx >= 0 ? idx : '';
+        var q = questions[pgList[i]], tok = String(lama.pg[i] === null || lama.pg[i] === undefined ? '' : lama.pg[i]);
+        if (q.type === 'KAT') {
+          ansPG[i] = (q.opts || []).map(function (_, s) { var c = tok.charAt(s); return c === 'B' || c === 'S' ? c : ''; });
+        } else if (q.type === 'PGK') {
+          ansPG[i] = tok === '-' ? [] : tok.split('').map(function (c) { return 'ABCDE'.indexOf(c); }).filter(function (x) { return x >= 0; });
+        } else {
+          var idx = 'ABCDE'.indexOf(tok.charAt(0));
+          ansPG[i] = idx >= 0 ? idx : '';
+        }
       }
     }
     if (Array.isArray(lama.esai)) {
@@ -977,19 +1022,25 @@
     card.setAttribute('data-n', String(n));
     var top = el('div', 'q-top');
     top.appendChild(el('span', 'q-num', String(n + 1)));
-    top.appendChild(el('span', 'q-kind', (kind === 'pg' ? 'Pilihan Ganda' : 'Esai') + ' • soal ' + (n + 1) + ' dari ' + jumlah));
+    var jenis = kind === 'esai' ? 'Esai' : (q.type === 'PGK' || q.type === 'KAT' ? 'Pilihan Ganda Kompleks' : 'Pilihan Ganda');
+    top.appendChild(el('span', 'q-kind', jenis + ' • soal ' + (n + 1) + ' dari ' + jumlah));
     card.appendChild(top);
-    if (q.p) { var pb = el('div', 'paragraf'); pb.innerHTML = String(q.p).replace(/\n/g, '<br>'); card.appendChild(pb); }
+    if (q.p && !q.g) { var pb = el('div', 'paragraf'); pb.innerHTML = String(q.p).replace(/\n/g, '<br>'); card.appendChild(pb); }
     var qt = el('div', 'q-text'); qt.innerHTML = pecahGambar(q.q); card.appendChild(qt);
 
-    if (kind === 'pg') {
+    if (kind === 'pg' && q.type === 'KAT') {
+      card.appendChild(el('p', 'hint', 'Tentukan ' + ((q.labels || ['Benar', 'Salah'])[0]) + ' atau ' + ((q.labels || ['Benar', 'Salah'])[1]) + ' untuk setiap pernyataan.'));
+      buatKategori(card, n, q);
+    } else if (kind === 'pg') {
+      var multi = q.type === 'PGK';
+      if (multi) card.appendChild(el('p', 'hint', 'Pilih satu atau lebih jawaban yang benar.'));
       (q.opts || []).forEach(function (o, j) {
-        var b = el('button', 'opt');
+        var b = el('button', 'opt' + (multi ? ' multi' : ''));
         b.type = 'button';
         b.appendChild(el('span', 'letter', String.fromCharCode(65 + j)));
-        var t = el('span', 'opt-text'); t.innerHTML = o; b.appendChild(t);
+        var t = el('span', 'opt-text'); t.innerHTML = String(o).replace(/\n/g, '<br>'); b.appendChild(t);
         var tick = el('span', 'tick'); tick.innerHTML = ICON.check; b.appendChild(tick);
-        b.addEventListener('click', function () { pilihPG(n, j); });
+        b.addEventListener('click', function () { if (multi) togglePGK(n, j); else pilihPG(n, j); });
         card.appendChild(b);
       });
     } else {
@@ -1012,10 +1063,63 @@
     return card;
   }
 
+  function buatKategori(card, n, q) {
+    var lab = q.labels || ['Benar', 'Salah'];
+    var box = el('div', 'kat');
+    (q.opts || []).forEach(function (st, s) {
+      var row = el('div', 'kat-row');
+      var txt = el('div', 'kat-st'); txt.innerHTML = String(st).replace(/\n/g, '<br>');
+      var btns = el('div', 'kat-btns');
+      ['B', 'S'].forEach(function (v, vi) {
+        var b = el('button', 'kbtn', lab[vi]);
+        b.type = 'button';
+        b.setAttribute('data-s', String(s));
+        b.setAttribute('data-v', v);
+        b.addEventListener('click', function () { setKategori(n, s, v); });
+        btns.appendChild(b);
+      });
+      row.appendChild(txt); row.appendChild(btns);
+      box.appendChild(row);
+    });
+    card.appendChild(box);
+  }
+
   function buildCards() {
     var sp = $('sec-pg'), se = $('sec-esai');
     sp.textContent = ''; se.textContent = '';
-    pgList.forEach(function (qi, n) { sp.appendChild(makeCard('pg', n, qi)); });
+    var teksGrup = {};
+    questions.forEach(function (q) { if (q.g && q.p) teksGrup[q.g] = q.p; });
+    var adaGrup = false, grupSaatIni = null, wrapSoal = null, bacSaatIni = null, awalGrup = 0;
+    pgList.forEach(function (qi, n) {
+      var q = questions[qi];
+      var g = q.g && teksGrup[q.g] ? q.g : null;
+      if (!g) { grupSaatIni = null; sp.appendChild(makeCard('pg', n, qi)); return; }
+      adaGrup = true;
+      if (g !== grupSaatIni) {
+        var akhir = n;
+        while (akhir + 1 < pgList.length && questions[pgList[akhir + 1]].g === g) akhir++;
+        var grup = el('div', 'grup');
+        var bac = el('aside', 'grup-bacaan');
+        bac.appendChild(el('div', 'grup-judul', akhir > n ? 'Bacaan untuk soal ' + (n + 1) + '–' + (akhir + 1) : 'Bacaan untuk soal ' + (n + 1)));
+        var isi = el('div', 'grup-isi'); isi.innerHTML = String(teksGrup[g]).replace(/\n/g, '<br>');
+        bac.appendChild(isi);
+        wrapSoal = el('div', 'grup-soal');
+        grup.appendChild(bac); grup.appendChild(wrapSoal);
+        sp.appendChild(grup);
+        grupSaatIni = g; bacSaatIni = bac; awalGrup = n;
+      }
+      var card = makeCard('pg', n, qi);
+      if (n !== awalGrup) {
+        var target = bacSaatIni;
+        var lk = el('button', 'lihat-bacaan', '↑ Lihat bacaan');
+        lk.type = 'button';
+        lk.addEventListener('click', function () { target.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' }); });
+        card.querySelector('.q-top').appendChild(lk);
+      }
+      wrapSoal.appendChild(card);
+    });
+    var cont = document.querySelector('.content');
+    if (cont) cont.classList.toggle('wide', adaGrup);
     esaiList.forEach(function (qi, n) { se.appendChild(makeCard('esai', n, qi)); });
     if (observer) observer.disconnect();
     if ('IntersectionObserver' in window) {
@@ -1070,7 +1174,8 @@
     $('sec-pg').hidden = sec !== 'pg';
     $('sec-esai').hidden = sec !== 'esai';
     $('sec-title').textContent = sec === 'pg' ? 'Pilihan Ganda' : 'Esai';
-    $('sec-sub').textContent = sec === 'pg' ? 'Pilih satu jawaban' : 'Jawab dengan kalimat sendiri';
+    var adaKompleks = questions.some(function (q) { return q.type === 'PGK' || q.type === 'KAT'; });
+    $('sec-sub').textContent = sec === 'pg' ? (adaKompleks ? 'Ikuti petunjuk pada setiap soal' : 'Pilih satu jawaban') : 'Jawab dengan kalimat sendiri';
     $('tab-pg').setAttribute('aria-selected', sec === 'pg' ? 'true' : 'false');
     $('tab-esai').setAttribute('aria-selected', sec === 'esai' ? 'true' : 'false');
     markCurrent();
@@ -1089,20 +1194,36 @@
   }
 
   // ===================== JAWAB =====================
-  function pilihPG(n, j) {
-    ansPG[n] = j;
+  function sentuhPG(n) {
     pgVer++; dirtyPG = true;
     paintCard('pg', n);
     refresh();
     kick();
   }
-  function terjawab(kind, n) { return kind === 'pg' ? ansPG[n] !== '' : ansEsai[n].trim() !== ''; }
+  function pilihPG(n, j) { ansPG[n] = j; sentuhPG(n); }
+  function togglePGK(n, j) {
+    var a = ansPG[n], i = a.indexOf(j);
+    if (i >= 0) a.splice(i, 1); else a.push(j);
+    sentuhPG(n);
+  }
+  function setKategori(n, s, v) { ansPG[n][s] = v; sentuhPG(n); }
+  function terjawab(kind, n) { return kind === 'pg' ? pgTerjawab(n) : ansEsai[n].trim() !== ''; }
   function paintCard(kind, n) {
     var card = $('q-' + kind + '-' + n);
     if (!card) return;
     card.classList.toggle('answered', terjawab(kind, n));
     if (kind === 'pg') {
-      card.querySelectorAll('.opt').forEach(function (b, j) { b.setAttribute('aria-pressed', ansPG[n] === j ? 'true' : 'false'); });
+      var q = questions[pgList[n]], a = ansPG[n];
+      if (q.type === 'KAT') {
+        card.querySelectorAll('.kbtn').forEach(function (b) {
+          b.setAttribute('aria-pressed', a[parseInt(b.getAttribute('data-s'), 10)] === b.getAttribute('data-v') ? 'true' : 'false');
+        });
+        card.classList.toggle('partial', !pgTerjawab(n) && a.some(function (v) { return v !== ''; }));
+      } else if (q.type === 'PGK') {
+        card.querySelectorAll('.opt').forEach(function (b, j) { b.setAttribute('aria-pressed', a.indexOf(j) >= 0 ? 'true' : 'false'); });
+      } else {
+        card.querySelectorAll('.opt').forEach(function (b, j) { b.setAttribute('aria-pressed', a === j ? 'true' : 'false'); });
+      }
     }
   }
   function syncSemua() {
@@ -1110,7 +1231,7 @@
     for (var j = 0; j < esaiList.length; j++) paintCard('esai', j);
     refresh();
   }
-  function jmlPG() { return ansPG.filter(function (v) { return v !== ''; }).length; }
+  function jmlPG() { var c = 0; for (var i = 0; i < ansPG.length; i++) if (pgTerjawab(i)) c++; return c; }
   function jmlEsai() { return ansEsai.filter(function (t) { return t.trim() !== ''; }).length; }
 
   function markCurrent() {
@@ -1133,7 +1254,7 @@
     $('tab-esai').classList.toggle('complete', esaiList.length > 0 && e === esaiList.length);
     $('prog-text').textContent = all + ' dari ' + total + ' soal terjawab';
     $('prog-bar').style.width = (total ? all / total * 100 : 0) + '%';
-    $('map-pg').querySelectorAll('.cell').forEach(function (c, i) { c.classList.toggle('answered', ansPG[i] !== ''); });
+    $('map-pg').querySelectorAll('.cell').forEach(function (c, i) { c.classList.toggle('answered', pgTerjawab(i)); });
     $('map-esai').querySelectorAll('.cell').forEach(function (c, i) { c.classList.toggle('answered', ansEsai[i].trim() !== ''); });
     markCurrent();
   }
@@ -1169,14 +1290,29 @@
   function dasar() {
     return { noUjian: identity.nisn, nama: identity.nama, kelas: identity.kelas, sheetTujuan: examData.ujian.sheetTujuan, nEsai: esaiList.length };
   }
+  // Semua soal PG biasa  -> format lama "A-CDB" / "0-123" (kompatibel dengan Code.gs lama).
+  // Ada PG kompleks/kategori -> format baru dipisah koma: jawaban "A,AC,BS-" dan kunci "PA,KAC,TBS".
   function pgPayload() {
-    var pg = '', kunci = '';
+    var semuaPG = pgList.every(function (qi) { return questions[qi].type === 'PG'; });
+    var pgT = [], kT = [];
     for (var i = 0; i < pgList.length; i++) {
-      pg += ansPG[i] === '' ? '-' : 'ABCDE'.charAt(ansPG[i]);
-      var k = questions[pgList[i]].key;
-      kunci += (k === '' || k === null || k === undefined) ? '-' : String(k);
+      var q = questions[pgList[i]], a = ansPG[i], k = q.key;
+      var adaK = !(k === '' || k === null || k === undefined);
+      if (q.type === 'KAT') {
+        pgT.push(a.length ? a.map(function (v) { return v === '' ? '-' : v; }).join('') : '-');
+        kT.push('T' + (k || '-'));
+      } else if (q.type === 'PGK') {
+        pgT.push(a.length ? a.slice().sort(function (x, y) { return x - y; }).map(function (j) { return 'ABCDE'.charAt(j); }).join('') : '-');
+        kT.push('K' + (k || '-'));
+      } else {
+        pgT.push(a === '' ? '-' : 'ABCDE'.charAt(a));
+        kT.push(semuaPG ? (adaK ? String(k) : '-') : 'P' + (adaK ? 'ABCDE'.charAt(k) : '-'));
+      }
     }
-    var d = dasar(); d.pg = pg; d.kunci = kunci; d.pelanggaran = violations;
+    var d = dasar();
+    d.pg = semuaPG ? pgT.join('') : pgT.join(',');
+    d.kunci = semuaPG ? kT.join('') : kT.join(',');
+    d.pelanggaran = violations;
     return d;
   }
   function esaiPayload(i) {
@@ -1251,11 +1387,12 @@
     if (pgList.length) { var a = el('div'); a.appendChild(el('span', '', 'Pilihan Ganda')); a.appendChild(el('b', '', jmlPG() + ' dari ' + pgList.length)); sum.appendChild(a); }
     if (esaiList.length) { var b = el('div'); b.appendChild(el('span', '', 'Esai')); b.appendChild(el('b', '', jmlEsai() + ' dari ' + esaiList.length)); sum.appendChild(b); }
     body.appendChild(sum);
-    var mp = daftarKosong(ansPG, function (v) { return v === ''; });
+    var mp = [];
+    for (var pi = 0; pi < pgList.length; pi++) if (!pgTerjawab(pi)) mp.push(pi + 1);
     var me = daftarKosong(ansEsai, function (t) { return t.trim() === ''; });
     if (mp.length || me.length) {
       var w = el('div', 'note warn');
-      if (mp.length) w.appendChild(el('p', '', 'PG belum dijawab: nomor ' + mp.join(', ')));
+      if (mp.length) w.appendChild(el('p', '', 'PG belum dijawab atau belum lengkap: nomor ' + mp.join(', ')));
       if (me.length) w.appendChild(el('p', '', 'Esai belum dijawab: nomor ' + me.join(', ')));
       body.appendChild(w);
     } else {
