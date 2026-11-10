@@ -496,7 +496,10 @@
       </div>
     </div>
     <div class="login-body gutter">
-      <h2>Data Diri Peserta</h2>
+      <div class="lhead">
+        <div class="lhead-ico"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg></div>
+        <div><b>Data Diri Peserta</b><span>Isi data lalu masuk ujian</span></div>
+      </div>
       <p id="login-status" class="note-line">Mengecek jadwal...</p>
       <div id="login-form" hidden>
         <div class="field">
@@ -754,7 +757,7 @@
     var netral = !sek && !kelasVal;
     var nama = sek && sek.nama ? String(sek.nama) : (netral ? 'CBT LPM Mano' : (th === 'sma' ? 'SMA Negeri 30 Halsel' : 'SMP LPM Mano'));
     var txt = netral ? 'CBT' : (th === 'sma' ? 'S30' : 'LM');
-    document.documentElement.setAttribute('data-school', th);
+    document.documentElement.setAttribute('data-school', netral ? 'netral' : th);
     $('school-name').textContent = nama;
     $('who-school').textContent = nama;
     $('foot-school').textContent = nama.toUpperCase();
@@ -1619,6 +1622,14 @@
 
   applySchool(null, '');
   muatAwal();
+})();
+</script>
+<script>
+// Tanggal pada kartu jam halaman masuk (tampilan saja)
+(function () {
+  var H = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'], B = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  function t() { var d = new Date(), e = document.getElementById('tgl-digital'); if (e) e.textContent = H[d.getDay()] + ', ' + d.getDate() + ' ' + B[d.getMonth()] + ' ' + d.getFullYear(); }
+  t(); setInterval(t, 60000);
 })();
 </script>
 </body>
